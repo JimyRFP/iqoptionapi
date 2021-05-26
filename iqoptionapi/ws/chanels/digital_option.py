@@ -3,7 +3,6 @@
 import datetime
 import time
 from iqoptionapi.ws.chanels.base import Base
-import iqoptionapi.global_value as global_value
 #work for forex digit cfd(stock)
 
 class Digital_options_place_digital_option(Base):
@@ -13,7 +12,7 @@ class Digital_options_place_digital_option(Base):
         "name": "digital-options.place-digital-option",
         "version":"1.0",
         "body":{
-            "user_balance_id":int(global_value.balance_id),
+            "user_balance_id":int(self.api.balance_id),
             "instrument_id":str(instrument_id),
             "amount":str(amount)
             

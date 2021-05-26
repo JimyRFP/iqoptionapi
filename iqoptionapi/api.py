@@ -61,7 +61,6 @@ from iqoptionapi.ws.objects.profile import Profile
 from iqoptionapi.ws.objects.candles import Candles
 from iqoptionapi.ws.objects.listinfodata import ListInfoData
 from iqoptionapi.ws.objects.betinfo import Game_betinfo_data
-import iqoptionapi.global_value as global_value
 from collections import defaultdict
 
 
@@ -162,6 +161,14 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         self.username = username
         self.password = password
         self.proxies = proxies
+        self.value_SSID=None
+        self.ssl_Mutual_exclusion=False
+        self.websocket_error_reason=None
+        self.check_websocket_if_error=False
+        self.check_websocket_if_connect=False
+        self.balance_id=None
+        print("init")
+
         # is used to determine if a buyOrder was set  or failed. If
         # it is None, there had been no buy order yet or just send.
         # If it is false, the last failed
@@ -261,12 +268,12 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
                                msg=msg, request_id=request_id))
          
          
-        while (global_value.ssl_Mutual_exclusion or global_value.ssl_Mutual_exclusion_write) and no_force_send:
+        while (self.ssl_Mutual_exclusion or self.ssl_Mutual_exclusion_write) and no_force_send:
             pass
-        global_value.ssl_Mutual_exclusion_write=True
+        self.ssl_Mutual_exclusion_write=True
         self.websocket.send(data)
         logger.debug(data)
-        global_value.ssl_Mutual_exclusion_write=False
+        self.ssl_Mutual_exclusion_write=False
         
     @property
     def logout(self):
@@ -717,9 +724,9 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         requests.utils.add_dict_to_cookiejar(self.session.cookies, cookies)
         
     def start_websocket(self):
-        global_value.check_websocket_if_connect = None
-        global_value.check_websocket_if_error=False
-        global_value.websocket_error_reason=None
+        self.check_websocket_if_connect = None
+        self.check_websocket_if_error=False
+        self.websocket_error_reason=None
          
         self.websocket_client = WebsocketClient(self)
 
@@ -729,11 +736,11 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         self.websocket_thread.start()
         while True:
             try:
-                if global_value.check_websocket_if_error:
-                    return False,global_value.websocket_error_reason
-                if global_value.check_websocket_if_connect == 0 :
+                if self.check_websocket_if_error:
+                    return False,self.websocket_error_reason
+                if self.check_websocket_if_connect == 0 :
                     return False,"Websocket connection closed."
-                elif global_value.check_websocket_if_connect == 1:
+                elif self.check_websocket_if_connect == 1:
                     return True,None
             except:
                 pass
@@ -750,7 +757,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         return response
     def send_ssid(self):
         self.profile.msg=None
-        self.ssid(global_value.SSID)  # pylint: disable=not-callable
+        self.ssid(self.value_SSID)  # pylint: disable=not-callable
         while self.profile.msg==None:
             pass
         if self.profile.msg==False:
@@ -759,8 +766,8 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
             return True
     def connect(self):
         
-        global_value.ssl_Mutual_exclusion=False
-        global_value.ssl_Mutual_exclusion_write=False
+        self.ssl_Mutual_exclusion=False
+        self.ssl_Mutual_exclusion_write=False
         """Method for connection to IQ Option API."""
         try:
             self.close()
@@ -772,7 +779,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
             return check_websocket,websocket_reason
 
         #doing temp ssid reconnect for speed up
-        if global_value.SSID!=None:
+        if self.value_SSID!=None:
             
             check_ssid=self.send_ssid()
            
@@ -780,7 +787,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
                 #ssdi time out need reget,if sent error ssid,the weksocket will close by iqoption server
                 response=self.get_ssid()
                 try:
-                    global_value.SSID = response.cookies["ssid"]     
+                    self.value_SSID = response.cookies["ssid"]     
                 except:
                     return False,response.text
                 #atexit.register(self.logout)
@@ -791,7 +798,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         else:
             response=self.get_ssid()
             try:
-               global_value.SSID = response.cookies["ssid"]
+               self.value_SSID = response.cookies["ssid"]
             except:
                 self.close()
                 return False,response.text
@@ -799,7 +806,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
             self.send_ssid()
         
         #set ssis cookie
-        requests.utils.add_dict_to_cookiejar(self.session.cookies, {"ssid":global_value.SSID})
+        requests.utils.add_dict_to_cookiejar(self.session.cookies, {"ssid":self.value_SSID})
         
 
         self.timesync.server_timestamp = None
@@ -812,7 +819,8 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         return True,None
 
     def close(self):
-        self.websocket.close()
+        if(self.websocket.close()):
+            self.check_websocket_if_connect=False
         self.websocket_thread.join()
 
     def websocket_alive(self):

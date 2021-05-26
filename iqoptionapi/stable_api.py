@@ -6,7 +6,6 @@ import threading
 import time
 import logging
 import operator
-import iqoptionapi.global_value as global_value
 from collections import defaultdict
 from collections import deque
 from iqoptionapi.expiration import get_expiration_time, get_remaning_time
@@ -75,9 +74,9 @@ class IQ_Option:
         self.SESSION_HEADER = header
         self.SESSION_COOKIE = cookie
     def get_globalssid(self):
-        return global_value.SSID
+        return self.self.value_SSID
     def set_globalssid(self,ssid):
-        global_value.SSID=ssid            
+        self.self.value_SSID=ssid            
     def connect(self):
         try:
             self.api.close()
@@ -96,9 +95,9 @@ class IQ_Option:
             self.re_subscribe_stream()
 
             # ---------for async get name: "position-changed", microserviceName
-            while global_value.balance_id == None:
+            while self.api.balance_id == None:
                 pass
-            self.position_change_all("subscribeMessage", global_value.balance_id)
+            self.position_change_all("subscribeMessage", self.api.balance_id)
             self.order_changed_all("subscribeMessage")
             self.api.setOptions(1, True)
 
@@ -132,7 +131,7 @@ class IQ_Option:
     def check_connect(self):
         # True/False
 
-        if global_value.check_websocket_if_connect == 0:
+        if self.check_websocket_if_connect == 0:
             return False
         else:
             return True
@@ -359,11 +358,11 @@ class IQ_Option:
     def get_currency(self):
         balances_raw = self.get_balances()
         for balance in balances_raw["msg"]:
-            if balance["id"] == global_value.balance_id:
+            if balance["id"] == self.api.balance_id:
                 return balance["currency"]
 
     def get_balance_id(self):
-        return global_value.balance_id
+        return self.api.balance_id
 
     """ def get_balance(self):
         self.api.profile.balance = None
@@ -382,7 +381,7 @@ class IQ_Option:
 
         balances_raw = self.get_balances()
         for balance in balances_raw["msg"]:
-            if balance["id"] == global_value.balance_id:
+            if balance["id"] == self.api.balance_id:
                 return balance["amount"]
 
     def get_balances(self):
@@ -396,7 +395,7 @@ class IQ_Option:
         # self.api.profile.balance_type=None
         profile = self.get_profile_ansyc()
         for balance in profile["balances"]:
-            if balance["id"] == global_value.balance_id:
+            if balance["id"] == self.api.balance_id:
                 if balance["type"] == 1:
                     return "REAL"
                 elif balance["type"] == 4:
@@ -422,10 +421,10 @@ class IQ_Option:
 
     def change_balance(self, Balance_MODE):
         def set_id(b_id):
-            if global_value.balance_id != None:
-                self.position_change_all("unsubscribeMessage", global_value.balance_id)
+            if self.api.balance_id != None:
+                self.position_change_all("unsubscribeMessage", self.api.balance_id)
 
-            global_value.balance_id = b_id
+            self.api.balance_id = b_id
 
             self.position_change_all("subscribeMessage", b_id)
 

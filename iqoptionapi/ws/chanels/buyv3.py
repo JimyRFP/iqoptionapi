@@ -2,7 +2,6 @@ import datetime
 import time
 from iqoptionapi.ws.chanels.base import Base
 import logging
-import iqoptionapi.global_value as global_value
 from iqoptionapi.expiration import get_expiration_time
 class Buyv3(Base):
 
@@ -23,7 +22,7 @@ class Buyv3(Base):
                      "expired": int(exp),
                      "direction": direction.lower(),
                     "option_type_id":option,
-                    "user_balance_id":int(global_value.balance_id)
+                    "user_balance_id":int(self.api.balance_id)
                      },
             "name": "binary-options.open-option",
             "version": "1.0"
@@ -50,7 +49,7 @@ class Buyv3_by_raw_expired(Base):
                      "expired": int(expired),
                      "direction": direction.lower(),
                     "option_type_id":option_id,
-                    "user_balance_id":int(global_value.balance_id)
+                    "user_balance_id":int(self.api.balance_id)
                      },
             "name": "binary-options.open-option",
             "version": "1.0"

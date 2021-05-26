@@ -4,8 +4,7 @@ import json
 import logging
 import websocket
 import iqoptionapi.constants as OP_code
-import iqoptionapi.global_value as global_value
-
+from iqoptionapi import global_value
 
                 
 class WebsocketClient(object):
@@ -20,7 +19,7 @@ class WebsocketClient(object):
         self.wss = websocket.WebSocketApp(
             self.api.wss_url, on_message=self.on_message,
             on_error=self.on_error, on_close=self.on_close,
-            on_open=self.on_open)
+            on_open=self.on_open,otherobj=self.api)
     def dict_queue_add(self,dict,maxdict,key1,key2,key3,value):
         if key3 in dict[key1][key2]:
                     dict[key1][key2][key3]=value
@@ -38,7 +37,7 @@ class WebsocketClient(object):
                     del dict[key1][key2][sorted(dict[key1][key2].keys(), reverse=False)[0]]   
     def on_message(self, message): # pylint: disable=unused-argument
         """Method to process websocket messages."""
-        global_value.ssl_Mutual_exclusion=True
+        self.ssl_Mutual_exclusion=True
         logger = logging.getLogger(__name__)
         logger.debug(message)
 
@@ -107,10 +106,10 @@ class WebsocketClient(object):
                 except:
                     pass
                 #Set Default account
-                if global_value.balance_id==None:
+                if self.api.balance_id==None:
                     for balance in message["msg"]["balances"]:
                         if balance["type"]==4:
-                            global_value.balance_id=balance["id"]
+                            self.api.balance_id=balance["id"]
                             break
                 try:
                     self.api.profile.balance_id=message["msg"]["balance_id"]
@@ -310,25 +309,25 @@ class WebsocketClient(object):
             self.api.users_availability=message["msg"]
         else:
             pass
-        global_value.ssl_Mutual_exclusion=False
+        self.ssl_Mutual_exclusion=False
                 
     
     @staticmethod
-    def on_error(wss, error): # pylint: disable=unused-argument
+    def on_error(wss, error,obj): # pylint: disable=unused-argument
         """Method to process websocket errors."""
         logger = logging.getLogger(__name__)
         logger.error(error)
-        global_value.websocket_error_reason=str(error)
-        global_value.check_websocket_if_error=True
+        obj.websocket_error_reason=str(error)
+        obj.check_websocket_if_error=True
     @staticmethod
-    def on_open(wss): # pylint: disable=unused-argument
+    def on_open(wss,obj): # pylint: disable=unused-argument
         """Method to process websocket open."""
         logger = logging.getLogger(__name__)
         logger.debug("Websocket client connected.")
-        global_value.check_websocket_if_connect=1
+        obj.check_websocket_if_connect=1
     @staticmethod
     def on_close(wss): # pylint: disable=unused-argument
         """Method to process websocket close."""
         logger = logging.getLogger(__name__)
         logger.debug("Websocket connection closed.")
-        global_value.check_websocket_if_connect=0
+        return True
