@@ -167,7 +167,6 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         self.check_websocket_if_error=False
         self.check_websocket_if_connect=False
         self.balance_id=None
-        print("init")
 
         # is used to determine if a buyOrder was set  or failed. If
         # it is None, there had been no buy order yet or just send.

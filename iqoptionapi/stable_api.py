@@ -39,6 +39,8 @@ class IQ_Option:
         self.SESSION_HEADER = {
             "User-Agent": r"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36"}
         self.SESSION_COOKIE = {}
+        self.api = IQOptionAPI(
+            "iqoption.com", self.email, self.password)
         #
 
         # --start
@@ -74,9 +76,9 @@ class IQ_Option:
         self.SESSION_HEADER = header
         self.SESSION_COOKIE = cookie
     def get_globalssid(self):
-        return self.self.value_SSID
+        return self.api.value_SSID
     def set_globalssid(self,ssid):
-        self.self.value_SSID=ssid            
+        self.api.value_SSID=ssid            
     def connect(self):
         try:
             self.api.close()
@@ -84,8 +86,7 @@ class IQ_Option:
             pass
             # logging.error('**warning** self.api.close() fail')
 
-        self.api = IQOptionAPI(
-            "iqoption.com", self.email, self.password)
+        
         check = None
         self.api.set_session(headers=self.SESSION_HEADER, cookies=self.SESSION_COOKIE)
         check, reason = self.api.connect()
