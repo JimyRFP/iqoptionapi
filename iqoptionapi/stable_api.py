@@ -78,7 +78,8 @@ class IQ_Option:
     def get_globalssid(self):
         return self.api.value_SSID
     def set_globalssid(self,ssid):
-        self.api.value_SSID=ssid            
+        self.api.value_SSID=ssid   
+          
     def connect(self):
         try:
             self.api.close()
@@ -96,6 +97,7 @@ class IQ_Option:
             self.re_subscribe_stream()
 
             # ---------for async get name: "position-changed", microserviceName
+            
             while self.api.balance_id == None:
                 pass
             self.position_change_all("subscribeMessage", self.api.balance_id)
@@ -121,7 +123,6 @@ class IQ_Option:
             self.api.subscribe_position_changed(
                 "position-changed", "cfd", 7)
             """
-
             # self.get_balance_id()
             return True, None
         else:

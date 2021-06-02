@@ -4,7 +4,6 @@ import json
 import logging
 import websocket
 import iqoptionapi.constants as OP_code
-from iqoptionapi import global_value
 
                 
 class WebsocketClient(object):

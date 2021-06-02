@@ -83,7 +83,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-public-methods
     socket_option_opened={}
     timesync = TimeSync()
-    profile = Profile()
+    
     candles = Candles()
     listinfodata = ListInfoData()
     api_option_init_all_result = []
@@ -152,6 +152,7 @@ class IQOptionAPI(object):  # pylint: disable=too-many-instance-attributes
         :param str password: The password of a IQ Option server.
         :param dict proxies: (optional) The http request proxies.
         """
+        self.profile = Profile()
         self.https_url = "https://{host}/api".format(host=host)
         self.wss_url = "wss://{host}/echo/websocket".format(host=host)
         self.websocket_client = None
